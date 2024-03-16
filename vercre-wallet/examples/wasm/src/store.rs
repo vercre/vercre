@@ -10,7 +10,7 @@ use test_utils::vci_provider::ISSUER;
 use vercre_core::provider::{Holder, Issuer, Signer};
 use vercre_core::w3c::vc::Proof;
 use vercre_core::w3c::{CredentialSubject, VerifiableCredential};
-use vercre_wallet::store::{StoreRequest, StoreResponse};
+use vercre_wallet::store::{StoreEntry, StoreRequest, StoreResponse};
 
 pub async fn request(op: &StoreRequest) -> Result<StoreResponse, Option<String>> {
     match op {
@@ -34,7 +34,7 @@ fn delete(id: &str) -> Result<StoreResponse, Option<String>> {
 
 // TODO: remove this when real back-end storage is called.
 
-async fn hard_coded_credentials() -> Vec<u8> {
+async fn hard_coded_credentials() -> Vec<StoreEntry> {
     use vercre_wallet::credential::{Credential, Logo};
 
     let dt = DateTime::parse_from_rfc3339("2024-02-29T00:26:45Z")
@@ -102,7 +102,7 @@ async fn hard_coded_credentials() -> Vec<u8> {
         logo: None,
     };
 
-    let list = vec![c1.clone()];
-    log!("hard_coded_credentials: {c1.id}", c1.id);
-    serde_json::to_vec(&list).expect("failed to serialize credentials")
+    let ser = serde_json::to_vec(&c1).expect("failed to serialize credential");
+
+    vec![StoreEntry(ser)]
 }

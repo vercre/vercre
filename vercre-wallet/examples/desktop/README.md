@@ -47,7 +47,6 @@ openid-vc://credential_offer?credential_offer=%7B%22credential_issuer%22%3A%22ht
 A convenient way to process a credential offer that bypasses the deep link is to use the add-credential form and paste the offer into the input field. This is not the intended end user experience but allows faster shell development and testing.
 
 ```bash
-```bash
 # get pre-authorized credential offer from issuance service
 RESP=$(curl --json '{
         "credential_configuration_ids": ["EmployeeID_JWT"],

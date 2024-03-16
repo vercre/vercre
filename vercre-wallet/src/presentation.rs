@@ -252,7 +252,7 @@ mod tests {
 
     use super::*;
     use crate::capabilities::signer::{SignerRequest, SignerResponse};
-    use crate::capabilities::store::{StoreRequest, StoreResponse};
+    use crate::capabilities::store::{StoreEntry, StoreRequest, StoreResponse};
 
     // Event::RequestReceived
     //   1. triggers retrieval of an Authorization Request from Verifier.
@@ -331,7 +331,10 @@ mod tests {
         // simulate StoreResponse
         let matches: Vec<Credential> =
             serde_json::from_value(CREDENTIALS.to_owned()).expect("should deserialize");
-        let results = serde_json::to_vec(&matches).expect("should serialize");
+        let results = matches
+            .iter()
+            .map(|m| StoreEntry::from(serde_json::to_vec(m).expect("should serialize")))
+            .collect();
         let response = StoreResponse::List(results);
         let update = app.resolve(request, response).expect("an update");
 

@@ -3,6 +3,11 @@
 channel = "nightly"
 components = ["clippy", "rust-src", "rustfmt"]
 targets = [
+    "aarch64-apple-darwin",
+    "aarch64-apple-ios",
+    "aarch64-apple-ios-sim",
+    "aarch64-linux-android",
+    "x86_64-apple-ios",
     "wasm32-unknown-unknown",
     "wasm32-wasi"
 ]

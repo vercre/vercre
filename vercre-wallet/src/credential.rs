@@ -187,7 +187,7 @@ mod tests {
 
     // use insta::{assert_yaml_snapshot, internals::Redaction};
     use super::*;
-    use crate::capabilities::store::StoreResponse;
+    use crate::capabilities::store::{StoreEntry, StoreResponse};
 
     /// Test that a `Event::List(filter)` event causes the app to fetch the
     /// credentials specified in the query.
@@ -203,7 +203,10 @@ mod tests {
         assert_eq!(request.operation, store::StoreRequest::List);
 
         let credentials = Vec::<Credential>::new();
-        let values = serde_json::to_vec(&credentials).expect("should serialize");
+        let values: Vec<StoreEntry> = credentials
+            .iter()
+            .map(|c| StoreEntry::from(serde_json::to_vec(c).expect("should serialize")))
+            .collect();
         let response = StoreResponse::List(values.clone());
 
         let update = app.resolve(request, response).expect("should resolve");

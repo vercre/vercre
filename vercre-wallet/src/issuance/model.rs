@@ -85,6 +85,9 @@ impl Model {
 
         self.status = Status::Offered;
 
+        #[cfg(feature = "wasm")]
+        web_sys::console::debug_2(&"issuance Model.new_offer".into(), &format!("{self:?}").into());
+
         Ok(())
     }
 

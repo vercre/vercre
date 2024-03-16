@@ -1,7 +1,7 @@
 {
   "name": "vercre-wallet-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "pnpm run wasm:build && vite",
@@ -20,12 +20,14 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.3",
     "shared_types": "link:types/gen/typescript",
-    "vercre-wallet": "link:../../../pkg"
+    "tinycolor2": "^1.6.0",
+    "vercre-wallet": "link:../../pkg"
   },
   "devDependencies": {
     "@types/node": "^20.11.13",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "@types/tinycolor2": "^1.4.6",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
@@ -40,6 +42,8 @@
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vite-plugin-csp": "^1.1.2",
-    "vite-plugin-mkcert": "^1.17.3"
+    "vite-plugin-mkcert": "^1.17.3",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0"
   }
 }

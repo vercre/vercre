@@ -13,7 +13,7 @@ use serde_json::{json, Value};
 use test_utils::wallet;
 use vercre_core::vp::{InvokeResponse, RequestObjectResponse, ResponseRequest};
 use vercre_wallet::capabilities::signer::{SignerRequest, SignerResponse};
-use vercre_wallet::capabilities::store::{StoreRequest, StoreResponse};
+use vercre_wallet::capabilities::store::{StoreEntry, StoreRequest, StoreResponse};
 use vercre_wallet::credential::Credential;
 use vercre_wallet::presentation::*;
 
@@ -86,7 +86,10 @@ async fn cross_device_flow() {
     let matched: Credential =
         serde_json::from_value(APP_CREDENTIAL.to_owned()).expect("should deserialize");
     let matches = vec![matched];
-    let results = serde_json::to_vec(&matches).expect("should serialize");
+    let results = matches
+        .iter()
+        .map(|m| StoreEntry::from(serde_json::to_vec(m).expect("should serialize")))
+        .collect();
     let response = StoreResponse::List(results);
     let update = app.resolve(request, response).expect("an update");
 

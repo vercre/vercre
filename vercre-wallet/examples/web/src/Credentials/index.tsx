@@ -8,26 +8,25 @@ import IconButton from '@mui/material/IconButton';
 import Slide from '@mui/material/Slide';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
-import { invoke } from "@tauri-apps/api/core";
-import { Credential } from "shared_types/types/shared_types";
+import * as st from 'shared_types/types/shared_types';
 
 import Add from './Add';
 import Detail from './Detail';
 import Present from './Present';
 import VcCard, { VcCardProps } from './VcCard';
 import { useShellState } from '../Shell/Context';
+import { useViewState } from "../ViewState";
 
-export type CredentialsProps = {
-    credentials: Credential[] | undefined;
-}
-
-export const Credentials = (props: CredentialsProps) => {
-    const { credentials } = props;
-    const [selected, setSelected] = useState<Credential | undefined>(undefined);
+const Credentials = () => {
+    const [selected, setSelected] = useState<st.Credential | undefined>(undefined);
     const [viewMode, setViewMode] = useState<'list' | 'detail' | 'add' | 'present'>('list');
     const { setShellState } = useShellState();
+    const { viewModel, update } = useViewState();
     const initialLoad = useRef<boolean>(true);
     const theme = useTheme();
+
+    const credentials = viewModel.credential.credentials;
+    console.debug(credentials);
 
     const listShellState = useMemo(() => ({
         title: 'Credentials',
@@ -39,32 +38,38 @@ export const Credentials = (props: CredentialsProps) => {
         ),
     }), [theme.palette.primary.contrastText]);
 
+    // On initial load of this component, get the list of credentials from the store capability by
+    // invoking the crux event.
     useEffect(() => {
         if (!initialLoad.current) {
             return;
         }
         initialLoad.current = false;
         setShellState({...listShellState});
-        invoke("get_list", { filter: "" });
-    }, [listShellState, setShellState]);
+        update(new st.EventVariantCredential(new st.CredentialEventVariantList));
+    }, []);
 
-    const handleSelect = (c: Credential) => {
+    // If the user clicks on a credential card, show the detail view of that credential.
+    const handleSelect = (c: st.Credential) => {
         setSelected(c);
         setViewMode('detail');
     };
 
+    // If the user closes a specific view, go back to the list view.
     const handleClose = () => {
         setSelected(undefined);
         setViewMode('list');
         setShellState({...listShellState});
     };
 
+    // If the user clicks on the add button, show the add view.
     const handleAdd = () => {
         setSelected(undefined);
         setViewMode('add');
     };
 
-    const displayProps = (credential: Credential) : VcCardProps => {
+    // Determine the props to display for a specific credential card.
+    const displayProps = (credential: st.Credential) : VcCardProps => {
         const locale = navigator.language; // TODO: use user preference from settings
         const display = credential.metadata.display?.find(d => d.locale === locale);
         return {
@@ -74,12 +79,11 @@ export const Credentials = (props: CredentialsProps) => {
             logo: credential.logo || undefined,
             logoUrl: undefined,
             name: display?.name || 'Credential',
-            onSelect: () => handleSelect(credential),
-            size: 'large'
-        }
+            onSelect: () => handleSelect(credential),            
+        };
     };
 
-    return (
+    return(
         <Box
             sx={{
                 pt: 1,
@@ -95,9 +99,9 @@ export const Credentials = (props: CredentialsProps) => {
                         pt: 2,
                     }}
                 >
-                    {credentials?.map((credential, index) =>
-                        <Stack key={index} spacing={-2} sx={{ pt: 2 }}>
-                            <VcCard key={index} { ...displayProps(credential) } />
+                    {credentials?.map((c, i) =>
+                        <Stack key={i} spacing={-2} sx={{ pt: 2 }}>
+                            <VcCard {...displayProps(c)} />
                         </Stack>
                     )}
                     <Fab
@@ -109,44 +113,41 @@ export const Credentials = (props: CredentialsProps) => {
                     </Fab>
                 </Stack>
             </Slide>
-            <Slide direction="left" in={viewMode === 'detail'} mountOnEnter unmountOnExit>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 0,
-                        pt: 2,
-                    }}
-                >
-                    {selected &&
-                        <Detail credential={selected} onClose={handleClose} />
-                    }
-                </Box>
-            </Slide>
-            <Slide direction="left" in={viewMode === 'add'} mountOnEnter unmountOnExit>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 0,
-                        pt: 2,
-                    }}
-                >
-                    <Add onClose={handleClose} />
-                </Box>
-            </Slide>
-            <Slide direction="left" in={viewMode === 'present'} mountOnEnter unmountOnExit>
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 0,
-                        pt: 2,
-                    }}
-                >
-                    <Present onClose={handleClose} />
-                </Box>
-            </Slide>
+            <StackItem view={viewMode === 'detail'}>
+                {selected && <Detail credential={selected} onClose={handleClose} />}
+            </StackItem>
+            <StackItem view={viewMode === 'add'}>
+                <Add onClose={handleClose} />
+            </StackItem>
+            <StackItem view={viewMode === 'present'}>
+                <Present onClose={handleClose} />
+            </StackItem>
         </Box>
     );
-}
+};
+
+export default Credentials;
+
+type StackItemProps = {
+    view: boolean;
+    children: React.ReactNode;
+};
+
+const StackItem = (props: StackItemProps) => {
+    return (
+        <Slide direction="left" in={props.view} mountOnEnter unmountOnExit>
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 0,
+                    pt: 2,
+                }}
+            >
+                {props.children}
+            </Box>
+        </Slide>
+    );
+};
 
 export const domainFromUrl = (url: string | undefined): string => {
     if (!url) {
@@ -166,6 +167,5 @@ export const dateFromIso = (iso: string | undefined): string => {
         month: 'long',
         day: 'numeric'
     });
-}
+};
 
-export default Credentials;

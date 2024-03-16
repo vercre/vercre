@@ -14,6 +14,9 @@ pub enum Error {
     /// The request was invalid.
     #[error("invalid store request {0}")]
     InvalidRequest(String),
+    /// The capability response was invalid.
+    #[error("invalid store response {0}")]
+    InvalidResponse(String),
 }
 
 // manually implement serde::Serialize
@@ -43,6 +46,25 @@ pub enum StoreRequest {
     Delete(String),
 }
 
+/// A store entry. A serialized credential.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
+pub struct StoreEntry(pub Vec<u8>);
+
+/// Convert a Vec<u8> to a `StoreEntry`
+impl From<Vec<u8>> for StoreEntry {
+    fn from(bytes: Vec<u8>) -> Self {
+        Self(bytes)
+    }
+}
+
+/// Convert a `StoreEntry` to a Vec<u8>
+impl From<StoreEntry> for Vec<u8> {
+    fn from(val: StoreEntry) -> Self {
+        val.0
+    }
+}
+
 /// `StoreResponse` represents the output expected from any implementer of the
 /// Store capability.
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -53,7 +75,7 @@ pub enum StoreResponse {
     Ok,
 
     /// The store operation returned a list of credentials.
-    List(Vec<u8>),
+    List(Vec<StoreEntry>),
 
     // The store operation returned with the specified error.
     Err(String),
@@ -133,13 +155,25 @@ where
 
                 match ctx.request_from_shell(request).await {
                     // all credentials stored by the shell
-                    StoreResponse::List(bytes) => {
-                        let list: Vec<Credential> = match serde_json::from_slice(&bytes) {
+                    StoreResponse::List(entries) => {
+                        let list: Result<Vec<Credential>> = entries
+                            .iter()
+                            .map(|entry| match serde_json::from_slice(&entry.0) {
+                                Ok(credential) => Ok(credential),
+                                Err(e) => Err(Error::InvalidResponse(format!(
+                                    "error deserializing list: {e}"
+                                ))),
+                            })
+                            .collect();
+                        let list = match list {
                             Ok(list) => list,
                             Err(e) => {
-                                return ctx.update_app(make_event(Err(Error::InvalidRequest(
-                                    format!("error deserializing credentials: {e}"),
-                                ))));
+                                #[cfg(feature = "wasm")]
+                                web_sys::console::error_2(
+                                    &"store capability list error:".into(),
+                                    &e.to_string().into(),
+                                );
+                                return ctx.update_app(make_event(Err(e)));
                             }
                         };
 
@@ -205,5 +239,31 @@ where
                 }
             }
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn store_entry_serde() {
+        // Simulate a credential stored in the store
+        let cred = Credential::sample();
+        let ser = serde_json::to_vec(&cred).unwrap();
+        let entry = StoreEntry::from(ser);
+        let entries = vec![entry.clone()];
+
+        // Simulate getting the credential from the store
+        let creds = entries
+            .iter()
+            .map(|entry| match serde_json::from_slice(&entry.0) {
+                Ok(credential) => Ok(credential),
+                Err(e) => Err(Error::InvalidResponse(format!("error deserializing list: {e}"))),
+            })
+            .collect::<Result<Vec<Credential>>>();
+        let creds = creds.unwrap();
+        assert_eq!(creds[0].id, cred.id);
+        assert_eq!(creds[0].issued, cred.issued);
     }
 }

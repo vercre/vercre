@@ -5,12 +5,6 @@ single-page application with client-side rendering and uses a [Rust Crux](https:
 
 ## Getting Started
 
-Make an entry in your hosts file that points `localhost` to `dev.vercre.io`. This allows the Vite `mkcert` plugin to generate a certificate for `dev.vercre.io` and serve the app over HTTPS.
-
-```bash
-echo "127.0.0.1 dev.vercre.io" | sudo tee -a /private/etc/hosts
-```
-
 Generate the types by building the `types` crate:
 
 ```bash
@@ -30,6 +24,35 @@ Run the app:
 pnpm dev
 ```
 
-Navigate to [https://dev.vercre.io:3000](https://dev.vercre.io:3000) in your browser.
+Navigate to [https://localhost:3000](https://localhost:3000) in your browser.
 
-TODO: Instructions for running services for issuance, verification and capabilities.
+## Issuing a Sample Credential
+
+Launch the `vercre-vci/examples/http` server. It runs on port 8080 by default.
+
+```bash
+cd vercre-vci
+cargo run --example http-issuer
+```
+
+Once both the VCI server and web app are running, the issuance process can be initiated by sending a Credential Offer to the wallet using curl commands to the example VCI server.
+
+
+
+```bash
+# get pre-authorized credential offer from issuance service
+RESP=$(curl --json '{
+        "credential_configuration_ids": ["EmployeeID_JWT"],
+        "holder_id": "normal_user",
+        "pre-authorize": true,
+        "tx_code_required": true,
+        "callback_id": "1234"
+    }' \
+    http://localhost:8080/invoke)
+
+# paste this JSON into the add-credential form in the web app
+echo $RESP | jq '.credential_offer'
+
+# print user pin
+echo $RESP | jq '.user_code'
+```

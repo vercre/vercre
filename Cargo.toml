@@ -27,7 +27,6 @@ chrono = { version = "0.4.35", features = ["serde"] }
 derive_builder = "0.20.0"
 ecdsa = "0.16.9"
 k256 = "0.13.3"
-lazy_static = "1.4.0"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 tracing = "0.1.40"
@@ -42,7 +41,3 @@ cargo-xcode = { version = "=1.7.0" }
 lto = true
 opt-level = "s"
 strip = true
-
-[profile.release.package.vercre-wallet]
-# optimizer kills assembly code
-opt-level = 1

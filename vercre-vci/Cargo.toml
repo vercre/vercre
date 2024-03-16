@@ -52,6 +52,6 @@ lazy_static = "1.4.0"
 oauth2 = { version = "4.4.2" }
 serde_qs = "0.12.0"
 test-utils = { path = "../test-utils" }
-tokio = { version = "1.36.0", features = [ "rt-multi-thread"] }
-tower-http = { version = "0.5.2", features = ["trace"] }
+tokio = { version = "1.36.0", default-features = false, features = ["rt-multi-thread"] }
+tower-http = { version = "0.5.2", features = ["cors", "trace"] }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }

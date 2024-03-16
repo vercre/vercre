@@ -1,10 +1,10 @@
-import { HttpHeader, HttpRequest, HttpResponse } from 'shared_types/types/shared_types';
+import * as st from 'shared_types/types/shared_types';
 
 export const request = async ({
     url,
     method,
     headers,
-}: HttpRequest): Promise<HttpResponse> => {
+}: st.HttpRequest): Promise<st.HttpResponse> => {
     const request = new Request(url, {
         method,
         headers: headers.map((header) => [header.name, header.value]),
@@ -13,14 +13,14 @@ export const request = async ({
 
     const response = await fetch(request);
 
-    const responseHeaders: HttpHeader[] = Array.from(
+    const responseHeaders: st.HttpHeader[] = Array.from(
         response.headers.entries(),
-        ([name, value]) => new HttpHeader(name, value),
+        ([name, value]) => new st.HttpHeader(name, value),
     );
 
     const body = await response.arrayBuffer();
 
-    return new HttpResponse(
+    return new st.HttpResponse(
         response.status,
         responseHeaders,
         Array.from(new Uint8Array(body)),

@@ -7,10 +7,12 @@
 
 #![cfg(feature = "typegen")]
 
+use std::collections::HashMap;
+
 use crux_core::bridge::Request;
 use crux_core::typegen::TypeGen;
 use crux_http::HttpError;
-use vercre_core::metadata::ValueType;
+use vercre_core::metadata::{CredentialConfiguration, ValueType};
 use vercre_core::vci::Format;
 
 use crate::credential::Credential;
@@ -38,31 +40,46 @@ pub fn generate(lang: Language, gen_dir: &str) {
     gen.register_samples::<Credential>(vec![Credential::sample()]).expect("should register");
 
     // register issuance app
+    let ivm = issuance::ViewModel {
+        issuer: "https://example.com".to_string(),
+        offered: HashMap::from([("EmployeeID_JWT".to_string(), CredentialConfiguration::sample())]),
+        status: issuance::Status::Offered,
+    };
+    gen.register_samples::<issuance::ViewModel>(vec![ivm.clone()])
+        .expect("should register issuance::ViewModel");
     gen.register_app::<issuance::App>().expect("should register issuance::App");
     gen.register_type::<issuance::Status>().expect("should register");
 
     // register presentation app
     // HACK: workaround for serde_reflection issues with Credential
-    let vm = presentation::ViewModel {
+    let pvm = presentation::ViewModel {
         credentials: vec![Credential::sample()],
         status: presentation::Status::Authorized,
     };
-    gen.register_samples::<presentation::ViewModel>(vec![vm])
+    gen.register_samples::<presentation::ViewModel>(vec![pvm.clone()])
         .expect("should register presentation::ViewModel");
     gen.register_app::<presentation::App>().expect("should register presentation::App");
     gen.register_type::<presentation::Status>().expect("should register presentation::Status");
 
     // register credential app
     // HACK: workaround for serde_reflection issues with Credential
-    let vm = credential::ViewModel {
+    let cvm = credential::ViewModel {
         credentials: vec![Credential::sample()],
         error: Some(String::new()),
     };
-    gen.register_samples::<credential::ViewModel>(vec![vm])
+    gen.register_samples::<credential::ViewModel>(vec![cvm.clone()])
         .expect("should register credential::ViewModel");
     gen.register_app::<credential::App>().expect("should register credential::App");
 
     // register wallet root app
+    let vm = app::ViewModel {
+        credential: cvm,
+        issuance: ivm,
+        presentation: pvm,
+        error: Some(String::new()),
+        view: app::View::Issuance,
+    };
+    gen.register_samples::<app::ViewModel>(vec![vm]).expect("should register app::ViewModel");
     gen.register_app::<app::App>().expect("should register app::App");
     gen.register_type::<app::View>().expect("should register app::View");
 

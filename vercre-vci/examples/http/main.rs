@@ -19,6 +19,7 @@ use serde_json::json;
 use test_utils::vci_provider::Provider;
 use tokio::net::TcpListener;
 use tokio::sync::RwLock;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -42,6 +43,7 @@ async fn main() {
     tracing::subscriber::set_global_default(subscriber).expect("set subscriber");
 
     let endpoint = Arc::new(Endpoint::new(Provider::new()));
+    let cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
 
     let router = Router::new()
         .route("/invoke", post(invoke))
@@ -53,6 +55,7 @@ async fn main() {
         .route("/deferred_credential", post(deferred_credential))
         .route("/.well-known/openid-credential-issuer", get(metadata))
         .layer(TraceLayer::new_for_http())
+        .layer(cors)
         .with_state(endpoint);
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.expect("should bind");
