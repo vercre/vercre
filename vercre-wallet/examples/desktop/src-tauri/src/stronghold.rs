@@ -27,7 +27,7 @@ impl Stronghold {
     ///
     /// The snapshot is encrypted using the password provided.
     // pub fn new(password: Vec<u8>, snapshot: Option<Vec<u8>>) -> Result<Self> {
-    pub fn new(password: Vec<u8>, vault_doc: iroh::Doc) -> Result<Self> {
+    pub fn new(password: Vec<u8>, vault_doc: &iroh::Doc) -> Result<Self> {
         let stronghold = iota_stronghold::Stronghold::default();
         let keyprovider = KeyProvider::try_from(password)?;
         let key_location = Location::generic(VAULT, SIGNING_KEY);
@@ -37,10 +37,7 @@ impl Stronghold {
         };
 
         let client = {
-            if !snapshot.is_empty() {
-                let source = Resource::Memory(snapshot);
-                stronghold.load_client_from_snapshot(CLIENT, &keyprovider, &source)?
-            } else {
+            if snapshot.is_empty() {
                 let client = stronghold.create_client(CLIENT)?;
 
                 // generate signing key
@@ -61,6 +58,9 @@ impl Stronghold {
                 })?;
 
                 client
+            } else {
+                let source = Resource::Memory(snapshot);
+                stronghold.load_client_from_snapshot(CLIENT, &keyprovider, &source)?
             }
         };
 

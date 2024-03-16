@@ -32,7 +32,7 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
     })?;
 
     // open/initialize Stronghold snapshot
-    let stronghold = Stronghold::new(password, vault_doc)?;
+    let stronghold = Stronghold::new(password, &vault_doc)?;
     handle.manage(stronghold);
 
     Ok(())

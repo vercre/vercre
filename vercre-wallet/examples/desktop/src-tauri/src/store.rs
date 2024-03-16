@@ -1,8 +1,7 @@
 use futures::StreamExt;
-use serde_json::Value;
 use tauri::async_runtime::{block_on, spawn};
 use tauri::Manager;
-use vercre_wallet::store::{StoreRequest, StoreResponse};
+use vercre_wallet::store::{StoreEntry, StoreRequest, StoreResponse};
 
 use super::get_list;
 use crate::iroh::DocType;
@@ -47,11 +46,13 @@ where
                 .entries()
                 .await?
                 .iter()
-                .map(|e| serde_json::from_slice(e).expect("should deserialize"))
-                .collect::<Vec<Value>>();
-            let bytes = serde_json::to_vec(&values).expect("should serialize");
+                // .map(|e| serde_json::from_slice(e).expect("should deserialize"))
+                .map(|v| StoreEntry::from(serde_json::to_vec(v).unwrap()))
+                .collect::<Vec<StoreEntry>>();
 
-            Ok(StoreResponse::List(bytes))
+            // let bytes = serde_json::to_vec(&values).expect("should serialize");
+
+            Ok(StoreResponse::List(values))
         }
         StoreRequest::Delete(id) => {
             vc_doc.delete_entry(id.to_owned()).await?;
