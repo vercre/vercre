@@ -32,8 +32,8 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
     })?;
 
     // open/initialize Stronghold snapshot
-    let mut entry =  block_on(async { vault_doc.entry("stronghold.bin").await })?;
-    let stronghold = Stronghold::new(password, &mut entry)?;
+    let mut entry = block_on(async { vault_doc.entry("stronghold.bin").await })?;
+    let stronghold = Stronghold::new(&mut entry, password)?;
     handle.manage(stronghold);
 
     Ok(())

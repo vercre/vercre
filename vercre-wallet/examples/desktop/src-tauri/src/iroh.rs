@@ -176,9 +176,9 @@ impl Doc {
 }
 
 pub struct Entry {
+    #[allow(dead_code)]
     key: String,
     value: Vec<u8>,
-    // slice: &'static [u8],
 }
 
 use std::io::{Read, Write};
@@ -187,12 +187,12 @@ impl Read for Entry {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let mut slice = self.value.as_slice();
         let read = slice.read(buf)?;
-        Ok(self.value.len())
+        self.value = slice.to_vec();
+        Ok(read)
     }
 
     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> std::io::Result<usize> {
-        let mut slice = self.value.as_slice();
-        slice.read_to_end(buf)
+        self.value.as_slice().read_to_end(buf)
     }
 }
 

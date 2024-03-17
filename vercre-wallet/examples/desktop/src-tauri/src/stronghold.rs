@@ -4,9 +4,6 @@ use iota_stronghold::procedures::{
     Ed25519Sign, GenerateKey, KeyType, PublicKey, StrongholdProcedure,
 };
 use iota_stronghold::{Client, KeyProvider, Location, Resource};
-use tauri::async_runtime::block_on;
-
-use crate::iroh;
 
 const CLIENT: &[u8] = b"signing_client";
 const VAULT: &[u8] = b"signing_key_vault";
@@ -29,7 +26,7 @@ impl Stronghold {
     ///
     /// The snapshot is encrypted using the password provided.
     // pub fn new(password: Vec<u8>, snapshot: Option<Vec<u8>>) -> Result<Self> {
-    pub fn new<S>(password: Vec<u8>, snapshot: &mut S) -> Result<Self>
+    pub fn new<S>(snapshot: &mut S, password: Vec<u8>) -> Result<Self>
     where
         S: Read + Write,
     {
