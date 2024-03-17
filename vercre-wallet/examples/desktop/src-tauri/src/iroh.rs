@@ -115,7 +115,7 @@ impl Doc {
     }
 
     pub async fn entry(&self, key: &str) -> Result<Entry> {
-        let Some(entry) = self.inner.get_exact(self.author_id, key, false).await? else {
+        let Some(entry) = self.inner.get_one(Query::key_exact(key)).await? else {
             return Err(anyhow::anyhow!("entry not found"));
         };
         let bytes = entry.content_bytes(&self.inner).map_ok(|bytes| bytes.to_vec()).await;
@@ -178,14 +178,21 @@ impl Doc {
 pub struct Entry {
     key: String,
     value: Vec<u8>,
+    // slice: &'static [u8],
 }
 
 use std::io::{Read, Write};
 
 impl Read for Entry {
-    fn read(&mut self, mut buf: &mut [u8]) -> std::io::Result<usize> {
-        buf.write(&self.value);
-        Ok(buf.len())
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let mut slice = self.value.as_slice();
+        let read = slice.read(buf)?;
+        Ok(self.value.len())
+    }
+
+    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> std::io::Result<usize> {
+        let mut slice = self.value.as_slice();
+        slice.read_to_end(buf)
     }
 }
 
