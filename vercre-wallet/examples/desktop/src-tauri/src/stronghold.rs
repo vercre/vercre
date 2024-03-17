@@ -17,6 +17,8 @@ pub struct Stronghold {
     client: Client,
 }
 
+use std::io::{Read, Write};
+
 impl Stronghold {
     /// Create new Stronghold instance.
     /// The method will attempt to load a Stronghold snapshot from the given path,
@@ -27,17 +29,23 @@ impl Stronghold {
     ///
     /// The snapshot is encrypted using the password provided.
     // pub fn new(password: Vec<u8>, snapshot: Option<Vec<u8>>) -> Result<Self> {
-    pub fn new(password: Vec<u8>, vault_doc: &iroh::Doc) -> Result<Self> {
+    pub fn new<S>(password: Vec<u8>, snapshot: &mut S) -> Result<Self>
+    where
+        S: Read + Write,
+    {
         let stronghold = iota_stronghold::Stronghold::default();
         let keyprovider = KeyProvider::try_from(password)?;
         let key_location = Location::generic(VAULT, SIGNING_KEY);
 
-        let Ok(snapshot) = block_on(async { vault_doc.entry("stronghold.bin").await }) else {
-            panic!("should get snapshot");
-        };
+        // let Ok(snapshot) = block_on(async { vault_doc.entry("stronghold.bin").await }) else {
+        //     panic!("should get snapshot");
+        // };
+
+        let mut buffer = Vec::<u8>::new();
+        snapshot.read_to_end(&mut buffer)?;
 
         let client = {
-            if snapshot.is_empty() {
+            if buffer.is_empty() {
                 let client = stronghold.create_client(CLIENT)?;
 
                 // generate signing key
@@ -53,14 +61,16 @@ impl Stronghold {
                 let Resource::Memory(bytes) = output else {
                     panic!("should get snapshot");
                 };
-                block_on(async {
-                    vault_doc.add_entry(String::from("stronghold.bin"), bytes).await
-                })?;
+
+                snapshot.write_all(&bytes)?;
 
                 client
             } else {
-                let source = Resource::Memory(snapshot);
-                stronghold.load_client_from_snapshot(CLIENT, &keyprovider, &source)?
+                stronghold.load_client_from_snapshot(
+                    CLIENT,
+                    &keyprovider,
+                    &Resource::Memory(buffer),
+                )?
             }
         };
 

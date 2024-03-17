@@ -114,11 +114,16 @@ impl Doc {
         self.inner.del(self.author_id, key).await.map(|_| ())
     }
 
-    pub async fn entry(&self, key: &str) -> Result<Vec<u8>> {
+    pub async fn entry(&self, key: &str) -> Result<Entry> {
         let Some(entry) = self.inner.get_exact(self.author_id, key, false).await? else {
             return Err(anyhow::anyhow!("entry not found"));
         };
-        entry.content_bytes(&self.inner).map_ok(|bytes| bytes.to_vec()).await
+        let bytes = entry.content_bytes(&self.inner).map_ok(|bytes| bytes.to_vec()).await;
+
+        Ok(Entry {
+            key: key.to_string(),
+            value: bytes?,
+        })
     }
 
     pub async fn entries(&self) -> Result<Vec<Vec<u8>>> {
@@ -167,5 +172,29 @@ impl Doc {
         //         Err(e) => DocEvent::Error(format!("error: {e}")),
         //     }
         // })
+    }
+}
+
+pub struct Entry {
+    key: String,
+    value: Vec<u8>,
+}
+
+use std::io::{Read, Write};
+
+impl Read for Entry {
+    fn read(&mut self, mut buf: &mut [u8]) -> std::io::Result<usize> {
+        buf.write(&self.value);
+        Ok(buf.len())
+    }
+}
+
+impl Write for Entry {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.value.write(buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.value.flush()
     }
 }
