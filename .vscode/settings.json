@@ -7,9 +7,6 @@
         "vercre-wallet/examples/wasm/Cargo.toml",
         "vercre-wallet/examples/web/Cargo.toml",
     ],
-    "rust-analyzer.cargo.extraEnv": {
-        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-    },
     "rust-analyzer.cargo.features": [
         // "typegen",
     ],
