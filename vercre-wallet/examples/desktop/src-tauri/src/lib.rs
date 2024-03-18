@@ -4,7 +4,7 @@ mod iroh;
 mod mod_http;
 mod signer;
 mod store;
-mod stronghold;
+mod vault;
 
 use std::sync::Arc;
 

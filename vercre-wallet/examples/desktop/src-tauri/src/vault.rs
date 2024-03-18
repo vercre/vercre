@@ -16,7 +16,7 @@ pub struct Stronghold {
     client: Client,
 }
 
-use std::io::{Read, Write};
+use std::io;
 
 impl Stronghold {
     /// Create new Stronghold instance.
@@ -27,17 +27,16 @@ impl Stronghold {
     /// the vault.
     ///
     /// The snapshot is encrypted using the password provided.
-    // pub fn new(password: Vec<u8>, snapshot: Option<Vec<u8>>) -> Result<Self> {
     pub fn new<S>(snapshot: &mut S, password: Vec<u8>) -> Result<Self>
     where
-        S: Read + Write + Clone,
+        S: io::Read + io::Write + Clone,
     {
         let stronghold = iota_stronghold::Stronghold::default();
         let key_provider = KeyProvider::try_from(password)?;
         let key_location = Location::generic(VAULT, SIGNING_KEY);
 
-        // convert snapshot to BufReader in order to check if it contains data
-        let mut reader = BufReader::new(snapshot.clone());
+        // convert to BufReader in order to check if has data
+        let mut reader = BufReader::new(io::Read::by_ref(snapshot));
 
         let client = {
             if reader.fill_buf()?.is_empty() {
