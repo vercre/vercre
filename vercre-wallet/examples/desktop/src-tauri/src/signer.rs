@@ -5,13 +5,13 @@ use tauri::Manager;
 use vercre_wallet::signer::{SignerRequest, SignerResponse};
 
 use crate::iroh::{Doc, DocType, Entry};
-use crate::vault::Stronghold;
+use crate::vault::Vault;
 use crate::{error, IrohState};
 
 const KEY_VAULT: &str = "docaaacaopj7u7mkmrbxv536p2j4ihk3t3qn36oycl27po2orshfl2srd3bafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
 const ENTRY_KEY: &str = "stronghold.bin";
 
-// initialise the Stronghold key store
+// initialise the key store
 pub fn init(handle: &tauri::AppHandle) -> Result<()> {
     // FIXME: get passphrase from user and salt from file(?)
     let passphrase = b"pass-phrase";
@@ -32,7 +32,7 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
         Ok::<Doc, Error>(vault_doc)
     })?;
 
-    // open/initialize Stronghold snapshot
+    // open/initialize snapshot
     let mut entry = block_on(async {
         vault_doc
             .entry(ENTRY_KEY)
@@ -46,7 +46,7 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
         //     // Err(e @ type) => return Err(e),
         // }
     });
-    let stronghold = Stronghold::new(&mut entry, password)?;
+    let stronghold = Vault::new(&mut entry, password)?;
     handle.manage(stronghold);
 
     Ok(())

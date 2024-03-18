@@ -195,24 +195,28 @@ impl Entry {
 }
 
 impl io::Read for Entry {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let mut slice = self.value.as_slice();
         let read = slice.read(buf)?;
         self.value = slice.to_vec();
         Ok(read)
     }
 
-    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> std::io::Result<usize> {
+    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
         self.value.as_slice().read_to_end(buf)
     }
 }
 
 impl io::Write for Entry {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.value.write(buf)
     }
 
-    fn flush(&mut self) -> std::io::Result<()> {
+    fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
+        self.value.write_all(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
         self.value.flush()?;
 
         match block_on(async {

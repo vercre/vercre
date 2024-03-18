@@ -5,33 +5,32 @@ use base64ct::{Base64UrlUnpadded, Encoding};
 use iota_stronghold::procedures::{
     Ed25519Sign, GenerateKey, KeyType, PublicKey, StrongholdProcedure,
 };
-use iota_stronghold::{Client, KeyProvider, Location};
+use iota_stronghold::{Client, KeyProvider, Location, Stronghold};
 
 const CLIENT: &[u8] = b"signing_client";
 const VAULT: &[u8] = b"signing_key_vault";
 const SIGNING_KEY: &[u8] = b"signing_key";
 
-pub struct Stronghold {
+pub struct Vault {
     key_location: Location,
     client: Client,
 }
 
 use std::io;
 
-impl Stronghold {
-    /// Create new Stronghold instance.
-    /// The method will attempt to load a Stronghold snapshot from the given path,
-    /// or create a new one if it does not exist.
+impl Vault {
+    /// Create new Vault instance.
     ///
-    /// When creating a new snapshot, a signing key will be generated and saved to
-    /// the vault.
+    /// The method will attempt to load a Stronghold snapshot from the given path,
+    /// or create a new one if it does not exist. When creating a new snapshot, a
+    /// signing key will be generated and saved to the vault.
     ///
     /// The snapshot is encrypted using the password provided.
     pub fn new<S>(snapshot: &mut S, password: Vec<u8>) -> Result<Self>
     where
         S: io::Read + io::Write + Clone,
     {
-        let stronghold = iota_stronghold::Stronghold::default();
+        let stronghold = Stronghold::default();
         let key_provider = KeyProvider::try_from(password)?;
         let key_location = Location::generic(VAULT, SIGNING_KEY);
 
