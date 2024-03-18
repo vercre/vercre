@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Error, Result};
 use futures::StreamExt;
-
 use tauri::async_runtime::{block_on, spawn};
 use tauri::Manager;
 use vercre_wallet::signer::{SignerRequest, SignerResponse};
@@ -10,6 +9,7 @@ use crate::stronghold::Stronghold;
 use crate::{error, IrohState};
 
 const KEY_VAULT: &str = "docaaacaopj7u7mkmrbxv536p2j4ihk3t3qn36oycl27po2orshfl2srd3bafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
+const ENTRY_KEY: &str = "stronghold.bin";
 
 // initialise the Stronghold key store
 pub fn init(handle: &tauri::AppHandle) -> Result<()> {
@@ -34,12 +34,17 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
 
     // open/initialize Stronghold snapshot
     let mut entry = block_on(async {
-        match vault_doc.entry("stronghold.binx").await {
-            Ok(entry) => entry,
-            Err(_) => Entry::new(String::from("stronghold.binx"), vault_doc),
-            // TODO: check error type and handle accordingly, e.g.:
-            // Err(e @ type) => return Err(e),
-        }
+        vault_doc
+            .entry(ENTRY_KEY)
+            .await
+            .unwrap_or_else(|_| Entry::new(String::from(ENTRY_KEY), vault_doc))
+
+        // match vault_doc.entry(ENTRY_KEY).await {
+        //     Ok(entry) => entry,
+        //     Err(_) => Entry::new(String::from(ENTRY_KEY), vault_doc),
+        //     // TODO: check error type and handle accordingly, e.g.:
+        //     // Err(e @ type) => return Err(e),
+        // }
     });
     let stronghold = Stronghold::new(&mut entry, password)?;
     handle.manage(stronghold);
