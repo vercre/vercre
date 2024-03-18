@@ -333,7 +333,7 @@ mod tests {
             serde_json::from_value(CREDENTIALS.to_owned()).expect("should deserialize");
         let results = matches
             .iter()
-            .map(|m| StoreEntry::from(serde_json::to_vec(m).expect("should serialize")))
+            .map(|m| StoreEntry(serde_json::to_vec(m).expect("should serialize")))
             .collect();
         let response = StoreResponse::List(results);
         let update = app.resolve(request, response).expect("an update");

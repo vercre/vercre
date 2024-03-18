@@ -1,5 +1,7 @@
 //! # Verifiable Credential Store
 
+use std::ops::Deref;
+
 use crux_core::capability::{CapabilityContext, Operation};
 use crux_core::macros::Capability;
 use serde::{Deserialize, Serialize};
@@ -51,17 +53,11 @@ pub enum StoreRequest {
 #[allow(clippy::module_name_repetitions)]
 pub struct StoreEntry(pub Vec<u8>);
 
-/// Convert a Vec<u8> to a `StoreEntry`
-impl From<Vec<u8>> for StoreEntry {
-    fn from(bytes: Vec<u8>) -> Self {
-        Self(bytes)
-    }
-}
+impl Deref for StoreEntry {
+    type Target = Vec<u8>;
 
-/// Convert a `StoreEntry` to a Vec<u8>
-impl From<StoreEntry> for Vec<u8> {
-    fn from(val: StoreEntry) -> Self {
-        val.0
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -158,7 +154,7 @@ where
                     StoreResponse::List(entries) => {
                         let list: Result<Vec<Credential>> = entries
                             .iter()
-                            .map(|entry| match serde_json::from_slice(&entry.0) {
+                            .map(|entry| match serde_json::from_slice(&entry) {
                                 Ok(credential) => Ok(credential),
                                 Err(e) => Err(Error::InvalidResponse(format!(
                                     "error deserializing list: {e}"
@@ -251,7 +247,7 @@ mod tests {
         // Simulate a credential stored in the store
         let cred = Credential::sample();
         let ser = serde_json::to_vec(&cred).unwrap();
-        let entry = StoreEntry::from(ser);
+        let entry = StoreEntry(ser);
         let entries = vec![entry.clone()];
 
         // Simulate getting the credential from the store

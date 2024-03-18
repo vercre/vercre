@@ -205,7 +205,7 @@ mod tests {
         let credentials = Vec::<Credential>::new();
         let values: Vec<StoreEntry> = credentials
             .iter()
-            .map(|c| StoreEntry::from(serde_json::to_vec(c).expect("should serialize")))
+            .map(|c| StoreEntry(serde_json::to_vec(c).expect("should serialize")))
             .collect();
         let response = StoreResponse::List(values.clone());
 

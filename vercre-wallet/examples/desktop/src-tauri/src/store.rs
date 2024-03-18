@@ -42,12 +42,10 @@ where
             Ok(StoreResponse::Ok)
         }
         StoreRequest::List => {
-            let values = vc_doc
-                .entries()
-                .await?
-                .iter()
-                .map(|v| StoreEntry::from(serde_json::to_vec(v).unwrap()))
-                .collect::<Vec<StoreEntry>>();
+            let mut values = vec![];
+            for v in vc_doc.entries().await? {
+                values.push(StoreEntry(v));
+            }
 
             Ok(StoreResponse::List(values))
         }

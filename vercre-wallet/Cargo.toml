@@ -24,16 +24,6 @@ crate-type = ["cdylib", "lib", "staticlib"]
 name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 
-# [[example]]
-# name = "cli"
-# path = "examples/cli/src/main.rs"
-# test = false
-
-# [[example]]
-# name = "desktop"
-# path = "examples/desktop/src-tauri/src/main.rs"
-# test = true
-
 [features]
 typegen = ["crux_core/typegen", "vercre-core/typegen"]
 wasm = ["vercre-core/wasm", "dep:web-sys"]
