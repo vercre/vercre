@@ -4,7 +4,7 @@ use tauri::async_runtime::{block_on, spawn};
 use tauri::Manager;
 use vercre_wallet::signer::{SignerRequest, SignerResponse};
 
-use crate::iroh::{Doc, DocType, Entry};
+use crate::iroh::{Doc, DocType}; // Entry};
 use crate::vault::Vault;
 use crate::{error, IrohState};
 

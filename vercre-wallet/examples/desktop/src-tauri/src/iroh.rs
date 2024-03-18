@@ -148,9 +148,9 @@ impl Doc {
     // updated.
     // pub async fn updates(&self) -> impl Stream<Item = DocEvent> {
     pub async fn updates(&self) -> impl Stream<Item = ()> {
-        use LiveEvent::*;
+        use LiveEvent::{ContentReady, InsertRemote};
 
-        let doc_id = self.inner.id().clone();
+        let doc_id = self.inner.id();
 
         self.inner
             .subscribe()
@@ -195,15 +195,15 @@ pub struct Entry {
     doc: Doc,
 }
 
-impl Entry {
-    pub fn new(key: String, doc: Doc) -> Self {
-        Self {
-            key,
-            value: Vec::new(),
-            doc,
-        }
-    }
-}
+// impl Entry {
+//     pub fn new(key: String, doc: Doc) -> Self {
+//         Self {
+//             key,
+//             value: Vec::new(),
+//             doc,
+//         }
+//     }
+// }
 
 impl io::Read for Entry {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
