@@ -25,7 +25,8 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
         let mut stream = vault_doc.updates().await;
         spawn(async move {
             while stream.next().await.is_some() {
-                println!("key vault event");
+                println!("reload vault");
+                // TODO: relaod vault
             }
         });
 
@@ -34,18 +35,9 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
 
     // open/initialize snapshot
     let mut entry = block_on(async {
-        vault_doc
-            .entry(ENTRY_KEY)
-            .await
-            .unwrap_or_else(|_| Entry::new(String::from(ENTRY_KEY), vault_doc))
-
-        // TODO: check error type and handle accordingly, e.g.:
-        // match vault_doc.entry(ENTRY_KEY).await {
-        //     Ok(entry) => entry,
-        //     Err(_) => Entry::new(String::from(ENTRY_KEY), vault_doc),
-        //     // Err(e @ type) => return Err(e),
-        // }
-    });
+        vault_doc.entry(ENTRY_KEY).await
+        //.unwrap_or_else(|_| Entry::new(String::from(ENTRY_KEY), vault_doc))
+    })?;
     let stronghold = Vault::new(&mut entry, password)?;
     handle.manage(stronghold);
 

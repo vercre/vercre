@@ -148,33 +148,44 @@ impl Doc {
     // updated.
     // pub async fn updates(&self) -> impl Stream<Item = DocEvent> {
     pub async fn updates(&self) -> impl Stream<Item = ()> {
+        use LiveEvent::*;
+
+        let doc_id = self.inner.id().clone();
+
         self.inner
             .subscribe()
             .await
             .expect("should subscribe")
-            .filter(|event| {
-                println!("filter: {event:?}");
+            .filter(move |event| {
                 match event {
-                    Ok(LiveEvent::InsertRemote { content_status, .. }) => match content_status {
-                        ContentStatus::Complete | ContentStatus::Missing => future::ready(true), // doc set,  doc del
-                        ContentStatus::Incomplete => future::ready(false),
-                    },
-                    Err(_) => {
-                        // println!("Error event: {event:?}: {e}");
+                    Ok(ContentReady { .. }) => {
+                        println!("event: {doc_id}, {event:?}");
                         future::ready(true)
                     }
-                    _ => future::ready(false),
+                    Ok(InsertRemote { content_status, .. }) => match content_status {
+                        // doc del
+                        ContentStatus::Missing => {
+                            println!("event: {doc_id}, {event:?}");
+                            future::ready(true)
+                        }
+                        // doc set
+                        ContentStatus::Complete | ContentStatus::Incomplete => {
+                            println!("excluded: {doc_id}, {event:?}");
+                            future::ready(false)
+                        }
+                    },
+                    Err(e) => {
+                        println!("error: {doc_id}, {event:?}: {e}");
+                        future::ready(true)
+                    }
+                    // SyncFinished, InsertLocal, NeighborUp, NeighborDown
+                    _ => {
+                        println!("excluded: {doc_id}, {event:?}");
+                        future::ready(false)
+                    }
                 }
             })
             .map(|_| ())
-
-        // .map(|event| {
-        //     debug!("map: {event:?}");
-        //     match event {
-        //         Ok(_) => DocEvent::Updated,
-        //         Err(e) => DocEvent::Error(format!("error: {e}")),
-        //     }
-        // })
     }
 }
 #[derive(Clone)]
