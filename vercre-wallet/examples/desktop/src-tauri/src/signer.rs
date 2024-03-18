@@ -39,10 +39,10 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
             .await
             .unwrap_or_else(|_| Entry::new(String::from(ENTRY_KEY), vault_doc))
 
+        // TODO: check error type and handle accordingly, e.g.:
         // match vault_doc.entry(ENTRY_KEY).await {
         //     Ok(entry) => entry,
         //     Err(_) => Entry::new(String::from(ENTRY_KEY), vault_doc),
-        //     // TODO: check error type and handle accordingly, e.g.:
         //     // Err(e @ type) => return Err(e),
         // }
     });
