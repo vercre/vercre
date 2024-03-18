@@ -1,9 +1,11 @@
+use std::io::{BufRead, BufReader};
+
 use anyhow::Result;
 use base64ct::{Base64UrlUnpadded, Encoding};
 use iota_stronghold::procedures::{
     Ed25519Sign, GenerateKey, KeyType, PublicKey, StrongholdProcedure,
 };
-use iota_stronghold::{Client, KeyProvider, Location, Resource};
+use iota_stronghold::{Client, KeyProvider, Location};
 
 const CLIENT: &[u8] = b"signing_client";
 const VAULT: &[u8] = b"signing_key_vault";
@@ -28,21 +30,17 @@ impl Stronghold {
     // pub fn new(password: Vec<u8>, snapshot: Option<Vec<u8>>) -> Result<Self> {
     pub fn new<S>(snapshot: &mut S, password: Vec<u8>) -> Result<Self>
     where
-        S: Read + Write,
+        S: Read + Write + Clone,
     {
         let stronghold = iota_stronghold::Stronghold::default();
-        let keyprovider = KeyProvider::try_from(password)?;
+        let key_provider = KeyProvider::try_from(password)?;
         let key_location = Location::generic(VAULT, SIGNING_KEY);
 
-        // let Ok(snapshot) = block_on(async { vault_doc.entry("stronghold.bin").await }) else {
-        //     panic!("should get snapshot");
-        // };
-
-        let mut buffer = Vec::<u8>::new();
-        snapshot.read_to_end(&mut buffer)?;
+        // convert snapshot to BufReader in order to check if it contains data
+        let mut reader = BufReader::new(snapshot.clone());
 
         let client = {
-            if buffer.is_empty() {
+            if reader.fill_buf()?.is_empty() {
                 let client = stronghold.create_client(CLIENT)?;
 
                 // generate signing key
@@ -52,22 +50,13 @@ impl Stronghold {
                 });
                 let _ = client.execute_procedure(proc)?;
 
-                // save snapshot (+ client and vault)
-                let target = Resource::Memory(Vec::new());
-                let output = stronghold.commit_with_keyprovider(&target, &keyprovider)?;
-                let Resource::Memory(bytes) = output else {
-                    panic!("should get snapshot");
-                };
-
-                snapshot.write_all(&bytes)?;
+                // persist snapshot with client and signing key
+                stronghold.save_snapshot(snapshot, &key_provider)?;
 
                 client
             } else {
-                stronghold.load_client_from_snapshot(
-                    CLIENT,
-                    &keyprovider,
-                    &Resource::Memory(buffer),
-                )?
+                stronghold.use_snapshot(&mut reader, &key_provider)?;
+                stronghold.load_client(CLIENT)?
             }
         };
 

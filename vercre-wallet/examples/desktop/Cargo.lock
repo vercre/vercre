@@ -3244,7 +3244,7 @@ dependencies = [
 [[package]]
 name = "iota_stronghold"
 version = "1.1.0"
-source = "git+https://github.com/vercre/stronghold.rs#5f12df4f0527103a5903ddcfeb6ea0378a9a69aa"
+source = "git+https://github.com/vercre/stronghold.rs#65e755135cb3c65943d9813100d15b55e76fe602"
 dependencies = [
  "bincode",
  "hkdf",
@@ -6693,7 +6693,7 @@ dependencies = [
 [[package]]
 name = "stronghold-derive"
 version = "1.0.0"
-source = "git+https://github.com/vercre/stronghold.rs#5f12df4f0527103a5903ddcfeb6ea0378a9a69aa"
+source = "git+https://github.com/vercre/stronghold.rs#65e755135cb3c65943d9813100d15b55e76fe602"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6703,7 +6703,7 @@ dependencies = [
 [[package]]
 name = "stronghold-runtime"
 version = "1.1.0"
-source = "git+https://github.com/vercre/stronghold.rs#5f12df4f0527103a5903ddcfeb6ea0378a9a69aa"
+source = "git+https://github.com/vercre/stronghold.rs#65e755135cb3c65943d9813100d15b55e76fe602"
 dependencies = [
  "dirs",
  "iota-crypto",
@@ -6721,7 +6721,7 @@ dependencies = [
 [[package]]
 name = "stronghold-utils"
 version = "1.0.0"
-source = "git+https://github.com/vercre/stronghold.rs#5f12df4f0527103a5903ddcfeb6ea0378a9a69aa"
+source = "git+https://github.com/vercre/stronghold.rs#65e755135cb3c65943d9813100d15b55e76fe602"
 dependencies = [
  "rand 0.8.5",
  "stronghold-derive",
@@ -6730,7 +6730,7 @@ dependencies = [
 [[package]]
 name = "stronghold_engine"
 version = "1.1.0"
-source = "git+https://github.com/vercre/stronghold.rs#5f12df4f0527103a5903ddcfeb6ea0378a9a69aa"
+source = "git+https://github.com/vercre/stronghold.rs#65e755135cb3c65943d9813100d15b55e76fe602"
 dependencies = [
  "anyhow",
  "dirs-next",

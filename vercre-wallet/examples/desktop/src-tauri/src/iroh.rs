@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
+use futures::executor::block_on;
 use futures::{future, Stream, StreamExt, TryFutureExt, TryStreamExt};
 use iroh::bytes::store::flat;
 use iroh::client::LiveEvent;
@@ -121,6 +123,7 @@ impl Doc {
         let bytes = entry.content_bytes(&self.inner).map_ok(|bytes| bytes.to_vec()).await;
 
         Ok(Entry {
+            doc: self.clone(),
             key: key.to_string(),
             value: bytes?,
         })
@@ -174,16 +177,24 @@ impl Doc {
         // })
     }
 }
-
+#[derive(Clone)]
 pub struct Entry {
-    #[allow(dead_code)]
     key: String,
     value: Vec<u8>,
+    doc: Doc,
 }
 
-use std::io::{Read, Write};
+impl Entry {
+    pub fn new(key: String, doc: Doc) -> Self {
+        Self {
+            key,
+            value: Vec::new(),
+            doc,
+        }
+    }
+}
 
-impl Read for Entry {
+impl io::Read for Entry {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let mut slice = self.value.as_slice();
         let read = slice.read(buf)?;
@@ -196,12 +207,19 @@ impl Read for Entry {
     }
 }
 
-impl Write for Entry {
+impl io::Write for Entry {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.value.write(buf)
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        self.value.flush()
+        self.value.flush()?;
+
+        match block_on(async {
+            self.doc.inner.set_bytes(self.doc.author_id, self.key.clone(), self.value.clone()).await
+        }) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
+        }
     }
 }

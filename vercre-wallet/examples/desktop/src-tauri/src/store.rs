@@ -46,11 +46,8 @@ where
                 .entries()
                 .await?
                 .iter()
-                // .map(|e| serde_json::from_slice(e).expect("should deserialize"))
                 .map(|v| StoreEntry::from(serde_json::to_vec(v).unwrap()))
                 .collect::<Vec<StoreEntry>>();
-
-            // let bytes = serde_json::to_vec(&values).expect("should serialize");
 
             Ok(StoreResponse::List(values))
         }

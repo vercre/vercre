@@ -1,10 +1,11 @@
 use anyhow::{anyhow, Error, Result};
 use futures::StreamExt;
+
 use tauri::async_runtime::{block_on, spawn};
 use tauri::Manager;
 use vercre_wallet::signer::{SignerRequest, SignerResponse};
 
-use crate::iroh::{Doc, DocType};
+use crate::iroh::{Doc, DocType, Entry};
 use crate::stronghold::Stronghold;
 use crate::{error, IrohState};
 
@@ -32,7 +33,14 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
     })?;
 
     // open/initialize Stronghold snapshot
-    let mut entry = block_on(async { vault_doc.entry("stronghold.bin").await })?;
+    let mut entry = block_on(async {
+        match vault_doc.entry("stronghold.binx").await {
+            Ok(entry) => entry,
+            Err(_) => Entry::new(String::from("stronghold.binx"), vault_doc),
+            // TODO: check error type and handle accordingly, e.g.:
+            // Err(e @ type) => return Err(e),
+        }
+    });
     let stronghold = Stronghold::new(&mut entry, password)?;
     handle.manage(stronghold);
 
