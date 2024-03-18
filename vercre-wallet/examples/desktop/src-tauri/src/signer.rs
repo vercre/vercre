@@ -58,7 +58,7 @@ pub fn request<R>(
 where
     R: tauri::Runtime,
 {
-    let stronghold = app_handle.state::<Stronghold>();
+    let stronghold = app_handle.state::<Vault>();
 
     match op {
         SignerRequest::Sign(msg) => {
