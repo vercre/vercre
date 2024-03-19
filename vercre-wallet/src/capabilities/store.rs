@@ -154,7 +154,7 @@ where
                     StoreResponse::List(entries) => {
                         let list: Result<Vec<Credential>> = entries
                             .iter()
-                            .map(|entry| match serde_json::from_slice(&entry) {
+                            .map(|entry| match serde_json::from_slice(entry) {
                                 Ok(credential) => Ok(credential),
                                 Err(e) => Err(Error::InvalidResponse(format!(
                                     "error deserializing list: {e}"
