@@ -8,6 +8,6 @@ gen
 node_modules
 dist
 *.local
-
+stronghold.bin
 
 .DS_Store
