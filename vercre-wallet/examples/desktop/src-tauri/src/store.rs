@@ -8,7 +8,7 @@ use crate::iroh::DocType;
 use crate::{error, IrohState};
 
 // Iroh document ticket for the credential store
-const VC_STORE: &str = "docaaacbp4ivplq3xf7krm3y5zybzjv2ha56qvhpfiykjjc6iukdifgoyihafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
+const VC_STORE: &str = "docaaacb3j5mbv5b6geuxm3lkwi634s3o72ankhxysbazrje5bg3vpjtatjafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
 
 // initialise the credential store on the Iroh node
 pub fn init(handle: &tauri::AppHandle) -> anyhow::Result<()> {

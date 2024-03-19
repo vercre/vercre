@@ -173,7 +173,7 @@ impl Doc {
                         // doc set
                         ContentStatus::Complete | ContentStatus::Incomplete => {
                             println!("excluded: {event:?}");
-                            future::ready(false)
+                            future::ready(true)
                         }
                     },
                     Err(e) => {

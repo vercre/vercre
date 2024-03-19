@@ -8,7 +8,7 @@ use crate::iroh::{Doc, DocType}; // Entry};
 use crate::vault::Vault;
 use crate::{error, IrohState};
 
-const KEY_VAULT: &str = "docaaacaopj7u7mkmrbxv536p2j4ihk3t3qn36oycl27po2orshfl2srd3bafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
+const KEY_VAULT: &str = "docaaacbwb5ws7yenkypwkxmc3mdkxpdtvjcapaeagxtx2xrdtm3r7osb7nafk62aofuwwwu5zb5ocvzj5v3rtqt6siglyuhoxhqtu4fxravvoteajcnb2hi4dthixs65ltmuys2mjomrsxe4bonfzg62bonzsxi53pojvs4lydaac2cyt22erablaraaa5ciqbfiaqj7ya6cbpuaaaaaaaaaaaahjce";
 const ENTRY_KEY: &str = "stronghold.bin";
 
 // initialise the key store
@@ -23,8 +23,9 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
         let mut stream = vault_doc.updates().await;
         spawn(async move {
             while stream.next().await.is_some() {
-                println!("reloading vault");
-                load_vault(&handle2).await.expect("failed to reload vault");
+                if let Err(e) = load_vault(&handle2).await {
+                    println!("failed to load vault: {e}");
+                };
             }
         });
 
@@ -38,6 +39,8 @@ pub fn init(handle: &tauri::AppHandle) -> Result<()> {
 }
 
 async fn load_vault(handle: &tauri::AppHandle) -> Result<()> {
+    println!("loading vault");
+
     let state = handle.state::<IrohState>();
     let vault_doc: Doc = state.node.lock().await.join_doc(DocType::KeyVault, KEY_VAULT).await?;
 
