@@ -2,7 +2,7 @@
 description = "OpenID Data Model"
 license = "MIT OR Apache-2.0"
 name = "vercre-core"
-publish = false
+publish = true
 readme = "README.md"
 
 authors.workspace = true
