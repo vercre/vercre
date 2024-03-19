@@ -28,7 +28,7 @@ impl Vault {
     /// The snapshot is encrypted using the password provided.
     pub fn new<S>(snapshot: &mut S, password: Vec<u8>) -> Result<Self>
     where
-        S: io::Read + io::Write + Clone,
+        S: io::Read + io::Write ,
     {
         let stronghold = Stronghold::default();
         let key_provider = KeyProvider::try_from(password)?;

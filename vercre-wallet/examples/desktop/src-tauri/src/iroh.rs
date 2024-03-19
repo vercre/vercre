@@ -148,9 +148,7 @@ impl Doc {
     // updated.
     // pub async fn updates(&self) -> impl Stream<Item = DocEvent> {
     pub async fn updates(&self) -> impl Stream<Item = ()> {
-        use LiveEvent::{ContentReady, InsertRemote};
-
-        let doc_id = self.inner.id();
+        use LiveEvent::{ContentReady, InsertRemote, SyncFinished};
 
         self.inner
             .subscribe()
@@ -158,29 +156,33 @@ impl Doc {
             .expect("should subscribe")
             .filter(move |event| {
                 match event {
+                    Ok(SyncFinished(event)) => {
+                        println!("event: {event:?}");
+                        future::ready(false)
+                    }
                     Ok(ContentReady { .. }) => {
-                        println!("event: {doc_id}, {event:?}");
+                        println!("event: {event:?}");
                         future::ready(true)
                     }
                     Ok(InsertRemote { content_status, .. }) => match content_status {
                         // doc del
                         ContentStatus::Missing => {
-                            println!("event: {doc_id}, {event:?}");
+                            println!("event: {event:?}");
                             future::ready(true)
                         }
                         // doc set
                         ContentStatus::Complete | ContentStatus::Incomplete => {
-                            println!("excluded: {doc_id}, {event:?}");
+                            println!("excluded: {event:?}");
                             future::ready(false)
                         }
                     },
                     Err(e) => {
-                        println!("error: {doc_id}, {event:?}: {e}");
+                        println!("error: {event:?}: {e}");
                         future::ready(true)
                     }
-                    // SyncFinished, InsertLocal, NeighborUp, NeighborDown
+                    // InsertLocal, NeighborUp, NeighborDown
                     _ => {
-                        println!("excluded: {doc_id}, {event:?}");
+                        println!("excluded: {event:?}");
                         future::ready(false)
                     }
                 }

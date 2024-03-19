@@ -1,19 +1,15 @@
 
 .PHONY: build
 build:
-	@cargo build
+	@cargo make build
 
 .PHONY: clean
 clean:
-	@cargo clean
+	@cargo make clean
 
-# TESTS = ""
 .PHONY: test
 test:
-	@RUSTFLAGS="-Dwarnings" cargo nextest run
-
-# test-doc:
-# 	@cargo test --doc -- --nocapture --color=always
+	@cargo make test
 
 .PHONY: doc
 doc:
@@ -21,27 +17,23 @@ doc:
 
 .PHONY: fmt
 fmt:
-	cargo fmt --all
+	cargo make fmt
 
 .PHONY: lint
 lint:
-	@rustup component add clippy 2> /dev/null
-	@cargo clippy -- -Dclippy::all -Dclippy::pedantic -Dclippy::nursery
-
-	# clippy::all = correctness, suspicious, style, complexity, perf
-	# not using (yet) -Dclippy::restriction
+	@cargo make lint
 
 .PHONY: audit
 audit: 
-	@cargo audit
+	@cargo make audit
 
 .PHONY: unused
 unused:
-	# -cargo install cargo-machete > /dev/null
-	@cargo machete --skip-target-dir
+	@cargo make unused
 
 .PHONY: check
-check: fmt lint audit unused
+check:
+	@cargo make check
 
 .PHONY: breaking
 breaking:
@@ -54,6 +46,9 @@ pub-check:
 	@cargo publish --dry-run --package vercre-vci
 	@cargo publish --dry-run --package vercre-vp
 	@cargo publish --dry-run --package vercre-wallet
+
+# test-doc:
+# 	@cargo test --doc -- --nocapture --color=always
 
 # test-miri:
 # 	MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-panic-on-unsupported" cargo miri test -- --nocapture --color=always
