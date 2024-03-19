@@ -36,7 +36,6 @@ lazy_static::lazy_static! {
     static ref AUTHORIZED: RwLock<HashMap<String, AuthorizationRequest>> = RwLock::new(HashMap::new());
 }
 
-
 #[tokio::main]
 async fn main() {
     let subscriber = FmtSubscriber::builder().with_max_level(Level::ERROR).finish();

@@ -1,0 +1,59 @@
+
+# https://sagiegurari.github.io/cargo-make/
+
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[config]
+default_to_workspace = true
+skip_core_tasks = true
+skip_crate_env_info = true
+skip_git_env_info = true
+skip_rust_env_info = true
+
+
+[tasks.clean]
+args = ["clean"]
+command = "cargo"
+
+[tasks.build]
+args = ["build"]
+command = "cargo"
+dependencies = ["clean"]
+
+[tasks.test]
+args = ["nextest", "run"]
+command = "cargo"
+dependencies = ["clean"]
+env = { RUSTFLAGS = "-Dwarnings" }
+
+# basic hygene tasks
+
+[tasks.fmt]
+args = ["fmt", "--all"]   # "--", "--emit=files"]
+command = "cargo"
+install_crate = "rustfmt"
+
+[tasks.lint]
+# clippy::all = correctness, suspicious, style, complexity, perf
+# not using (yet) -Dclippy::restriction
+args = ["clippy", "--", "-Dclippy::all", "-Dclippy::nursery", "-Dclippy::pedantic"]
+command = "cargo"
+install_crate = { rustup_component_name = "clippy" }
+
+[tasks.audit]
+args = ["audit"]
+command = "cargo"
+
+[tasks.unused]
+args = ["machete", "--skip-target-dir"]
+command = "cargo"
+install_crate = "cargo-machete"
+
+[tasks.outdated]
+args = ["outdated", "--workspace", "--exit-code", "1"]
+command = "cargo"
+install_crate = "cargo-outdated"
+
+[tasks.check]
+dependencies = ["fmt", "lint", "audit", "outdated", "unused"]
