@@ -1,5 +1,5 @@
-
-# https://sagiegurari.github.io/cargo-make/
+# Install: `cargo install cargo-make`
+# Help: https://sagiegurari.github.io/cargo-make/
 
 [env]
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
