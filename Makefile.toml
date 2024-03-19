@@ -73,24 +73,20 @@ command = "cargo"
 install_crate = "cargo-semver-checks"
 
 [tasks.pre-pub]
-run_task = [{ name = "pre-pub-core", parallel = true }, { name = "pre-pub-vci", parallel = true }]
-
-[tasks.pre-pub-pkg]
-args = ["publish", "--dry-run", "--allow-dirty"]
-command = "cargo"
+run_task = { name = ["pre-pub-core", "pre-pub-vci", "pre-pub-vp", "pre-pub-wallet"], parallel = true }
 
 [tasks.pre-pub-core]
-args = ["--package", "vercre-core"]
-extend = "pre-pub-pkg"
+args = ["publish", "--dry-run", "--allow-dirty", "--package", "vercre-core"]
+command = "cargo"
 
 [tasks.pre-pub-vci]
-args = ["--package", "vercre-vci"]
-extend = "pre-pub-pkg"
+args = ["publish", "--dry-run", "--allow-dirty", "--package", "vercre-vci"]
+command = "cargo"
 
 [tasks.pre-pub-vp]
-args = ["--package", "vercre-vp"]
-extend = "pre-pub-pkg"
+args = ["publish", "--dry-run", "--allow-dirty", "--package", "vercre-vp"]
+command = "cargo"
 
 [tasks.pre-pub-wallet]
-args = ["--package", "vercre-wallet"]
-extend = "pre-pub-pkg"
+args = ["publish", "--dry-run", "--allow-dirty", "--package", "vercre-wallet"]
+command = "cargo"
