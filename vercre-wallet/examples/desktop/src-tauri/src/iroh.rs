@@ -107,6 +107,14 @@ pub enum DocType {
     KeyVault,
 }
 
+// #[derive(Debug, Clone)]
+// pub enum Event {
+//     Ready,
+//     Added,
+//     Deleted,
+//     Error(String),
+// }
+
 impl Doc {
     pub async fn add_entry(&self, key: String, value: Vec<u8>) -> Result<()> {
         self.inner.set_bytes(self.author_id, key, value).await.map(|_| ())

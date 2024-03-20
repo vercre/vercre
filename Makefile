@@ -1,4 +1,3 @@
-
 # dynamically target Makefile.toml
 .PHONY: %
 %:
